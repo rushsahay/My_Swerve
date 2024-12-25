@@ -64,6 +64,9 @@ public class SwerveModule{
     public double getTurningVelocity(){
         return turnEncoder.getVelocity();
     }
+    public Rotation2d getRotation2d(){
+        return new Rotation2d(turnEncoder.getPosition());
+    }
     public double getAbsoluteEncoderRad(){
         double angle = absoluteEncoder.getVoltage()/RobotController.getVoltage5V();
         angle*=2.0*Math.PI;

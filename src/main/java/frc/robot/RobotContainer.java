@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -44,7 +46,7 @@ public class RobotContainer {
     ()->-m_driverController.getLeftX(),
     ()->  m_driverController.getLeftY(),
     () -> m_driverController.getRightX(),
-    () -> true,
+    ()->true,
     swervesubsystem
     ));
   }
@@ -66,6 +68,14 @@ public class RobotContainer {
     // cancelling on release.
     resetHeading_Start.onTrue(
       new InstantCommand(swervesubsystem::zeroHeading, swervesubsystem));
+
+      m_driverController.x().onTrue(new Drive(
+    ()->-m_driverController.getLeftX(),
+    ()->  m_driverController.getLeftY(),
+    () -> m_driverController.getRightX(),
+    ()->false,
+    swervesubsystem
+    ));
 
   }
 

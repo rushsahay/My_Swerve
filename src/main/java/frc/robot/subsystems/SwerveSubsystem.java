@@ -4,8 +4,11 @@ import java.lang.invoke.ConstantBootstraps;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,7 +48,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Constants.SwerveConstants.RIGHT_BACK_OFFSET);
 
     private final Pigeon2 gyro = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);
-
+    private final SwerveDriveOdometry odom = new SwerveDriveOdometry(Constants.SwerveConstants.DRIVE_KINEMATICS, new Rotation2d(0),getModulePositions());
     public SwerveSubsystem(){
         new Thread(()->{
         try{
@@ -67,12 +70,31 @@ public class SwerveSubsystem extends SubsystemBase {
         return Math.IEEEremainder(gyro.getAngle(), 360);
     }
 
+    public SwerveModulePosition[] getModulePositions(){
+        SwerveModulePosition[] modulePositions = {new SwerveModulePosition(leftFront.getDriverPosition(),leftFront.getRotation2d()),
+            new SwerveModulePosition(rightFront.getDriverPosition(),rightFront.getRotation2d()),
+        new SwerveModulePosition(leftBack.getDriverPosition(),leftBack.getRotation2d()),
+    new SwerveModulePosition(rightBack.getDriverPosition(),rightBack.getRotation2d())};
+    return modulePositions;
+    }
+
     public Rotation2d getRotation2d(){
         return new Rotation2d(getHeading());
     }
+    public Pose2d getPose2d(){
+        return odom.getPoseMeters();
+    }
 
+    public void setPose(Pose2d pose){
+        odom.resetPosition(getRotation2d(), getModulePositions(),pose);
+    }
+    public SwerveModuleState[] getSwerveStates(){
+        SwerveModuleState[] states = {leftFront.getState(),rightFront.getState(),leftBack.getState(),rightBack.getState()};
+        return states;
+    }
     @Override
     public void periodic(){
+        odom.update(getRotation2d(),getModulePositions());
         SmartDashboard.putNumber("Robot Heading",getHeading());
     }
 
