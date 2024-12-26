@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -14,6 +16,7 @@ public class Drive extends Command {
     private Supplier<Boolean> fieldOrientedFunc;
     private SlewRateLimiter xLimitor, yLimitor, turnLimitor;
     private SwerveSubsystem swerve;
+    private final StructArrayPublisher input;
     public Drive(Supplier<Double> xSpeed,Supplier<Double> ySpeed, Supplier<Double> turnSpeed,
     Supplier<Boolean> fieldOriented,SwerveSubsystem swerve){
         this.xSpeedFunc = xSpeed;
@@ -24,7 +27,8 @@ public class Drive extends Command {
         xLimitor = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
         yLimitor = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
         turnLimitor = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
-        addRequirements(swerve);
+        input = NetworkTableInstance.getDefault().getTable("24K").getStructArrayTopic("Input_States", SwerveModuleState.struct).publish();
+     addRequirements(swerve);
     }
 
     @Override
@@ -55,7 +59,7 @@ public class Drive extends Command {
         }
 
         SwerveModuleState[] desiredStates = Constants.SwerveConstants.DRIVE_KINEMATICS.toSwerveModuleStates(chassisSpeeds);
-
+        input.set(desiredStates);
         swerve.setModuleStates(desiredStates);
     }
     
